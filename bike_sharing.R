@@ -206,7 +206,8 @@ server <- shinyServer(function(input, output) {
                  color = ifelse(counts[[regis_val]] == max(counts[[regis_val]]), 'red','black'))+
       labs(title = sprintf('%s bike sharing registrations by month', input$regis),
            subtitle = sprintf('Throughout the year %s \nMaximum value for %s registrations: %s \nTotal amount of %s registrations: %s', input$year, regis_val, max(counts[[regis_val]]), regis_val, sum(counts[[regis_val]])),
-           x = 'Month', y = 'Number of registrations')+
+           x = 'Month', 
+           y = sprintf('Count of %s registrations', regis_val))+
       theme(axis.text = element_text(size = 12),
             axis.title = element_text(size = 14),
             plot.title = element_text(size = 16, face = 'bold'),
@@ -271,7 +272,7 @@ server <- shinyServer(function(input, output) {
       labs(title = sprintf('%s bike sharing registrations by season and weather', input$regis),
            subtitle = sprintf('Throughout the year %s', input$year),
            x = 'Season', 
-           y = sprintf('%s count of registrations', input$regis))+
+           y = sprintf('Count of %s registrations', regis_val))+
       scale_fill_manual(values = c('Bad' = 'salmon2', 'Fair' = 'steelblue3', 'Good' = 'mediumseagreen', 'Very Bad' = 'tomato4'),
                         name = 'Weather')
     
