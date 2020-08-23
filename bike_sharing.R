@@ -39,7 +39,7 @@ ui <- dashboardPage(
   dashboardSidebar(width = 290,
                    sidebarMenu(menuItem("Plots", tabName = "plots", icon = icon('poll')),
                                menuItem("Dashboard", tabName = "dash", icon = icon('tachometer-alt')),
-                               menuItem("Prediction", tabName = 'pred', icon = icon('search')))),
+                               menuItem("Prediction", tabName = "pred", icon = icon('search')))),
 
   #Tabs layout
   dashboardBody(tags$head(tags$style(HTML('.main-header .logo {font-weight: bold;}'))),
@@ -297,7 +297,7 @@ server <- shinyServer(function(input, output) {
                         atemp = input$p_ftemp, 
                         windspeed = input$p_wind)
     
-    #Inclued the values into the new data
+    #Include the values into the new data
     test_pred <- rbind(test_pred,values)
     
     #Single preiction using the randomforest model
