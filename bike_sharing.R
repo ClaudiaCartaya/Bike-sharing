@@ -5,11 +5,15 @@ library(shiny)
 library(shinydashboard)
 library(ggplot2)
 library(dplyr)
+library(randomForest)
 library(Metrics)
 
 #Importing datasets
 bike <- read.csv('bike_sharing.csv')
 bike$yr <- as.factor(bike$yr)
+bike$mnth <- factor(bike$mnth, levels = c('Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'))
+bike$weekday <- factor(bike$weekday, levels = c('Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'))
+bike$season <- factor(bike$season, levels = c('Spring', 'Summer', 'Fall', 'Winter'))
 
 train_set <- read.csv('bike_train.csv')
 train_set$hr <- as.factor(train_set$hr)
@@ -39,7 +43,7 @@ ui <- dashboardPage(
   dashboardSidebar(width = 290,
                    sidebarMenu(menuItem("Plots", tabName = "plots", icon = icon('poll')),
                                menuItem("Dashboard", tabName = "dash", icon = icon('tachometer-alt')),
-                               menuItem("Prediction", tabName = "pred", icon = icon('search')))),
+                               menuItem("Prediction", tabName = 'pred', icon = icon('search')))),
 
   #Tabs layout
   dashboardBody(tags$head(tags$style(HTML('.main-header .logo {font-weight: bold;}'))),
@@ -189,11 +193,6 @@ server <- shinyServer(function(input, output) {
 
     }
     
-    #Arranging table value
-    counts <- counts %>% arrange(match(mnth, month.name))
-    counts <- data.frame(counts)
-    counts$mnth <- factor(counts$mnth, levels = c('Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'))
-
     #Column name variable
     regis_val = ifelse(input$regis == 'Total', 'total',
                        ifelse(input$regis == 'New', 'new','casual'))
@@ -206,8 +205,7 @@ server <- shinyServer(function(input, output) {
                  color = ifelse(counts[[regis_val]] == max(counts[[regis_val]]), 'red','black'))+
       labs(title = sprintf('%s bike sharing registrations by month', input$regis),
            subtitle = sprintf('Throughout the year %s \nMaximum value for %s registrations: %s \nTotal amount of %s registrations: %s', input$year, regis_val, max(counts[[regis_val]]), regis_val, sum(counts[[regis_val]])),
-           x = 'Month', 
-           y = sprintf('Count of %s registrations', regis_val))+
+           x = 'Month', y = 'Number of registrations')+
       theme(axis.text = element_text(size = 12),
             axis.title = element_text(size = 14),
             plot.title = element_text(size = 16, face = 'bold'),
@@ -269,10 +267,11 @@ server <- shinyServer(function(input, output) {
             plot.title = element_text(size = 16, face = 'bold'),
             plot.subtitle = element_text(size = 14),
             legend.text = element_text(size = 12))+
+      ylim(NA, 805000)+
       labs(title = sprintf('%s bike sharing registrations by season and weather', input$regis),
            subtitle = sprintf('Throughout the year %s', input$year),
            x = 'Season', 
-           y = sprintf('Count of %s registrations', regis_val))+
+           y = sprintf('%s count of registrations', input$regis))+
       scale_fill_manual(values = c('Bad' = 'salmon2', 'Fair' = 'steelblue3', 'Good' = 'mediumseagreen', 'Very Bad' = 'tomato4'),
                         name = 'Weather')
     
@@ -297,7 +296,7 @@ server <- shinyServer(function(input, output) {
                         atemp = input$p_ftemp, 
                         windspeed = input$p_wind)
     
-    #Include the values into the new data
+    #Inclued the values into the new data
     test_pred <- rbind(test_pred,values)
     
     #Single preiction using the randomforest model
